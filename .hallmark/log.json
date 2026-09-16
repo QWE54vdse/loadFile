@@ -1,0 +1,11 @@
+[
+	{
+		"date": "2026-09-14",
+		"macrostructure": "Split Workspace",
+		"theme": "custom",
+		"theme_axes": "near-black cool / monospace display / cyan accent ~195",
+		"vibe": "quiet terminal ledger",
+		"enrichment": "none",
+		"brief": "archive upload + browse + download tool UI (React + Elysia)"
+	}
+]
