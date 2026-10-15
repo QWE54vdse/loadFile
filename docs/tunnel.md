@@ -84,15 +84,43 @@ cloudflared tunnel run --url http://localhost:3000 archive-dock
 
 ### 方案 C：ngrok
 
-```powershell
-ngrok http 3000
+本仓库用 `@ngrok/ngrok` SDK 直接起隧道，**不需要装 ngrok CLI**。
+
+#### 1. 配置令牌
+
+去 https://dashboard.ngrok.com/get-started/your-authtoken 复制 authtoken，
+追加到 `server/.env`（该文件已在 .gitignore 里，不要提交）：
+
+```
+NGROK_AUTHTOKEN=你的authtoken
 ```
 
-免费版可在 ngrok dashboard 领一个固定域名，之后用：
+#### 2. 启动
 
 ```powershell
-ngrok http --url=你的域名.ngrok-free.app 3000
+bun run build
+$env:TUNNEL = "1"; bun run start
 ```
+
+日志里出现 `[archive-dock] public: https://xxx.ngrok-free.dev` 即成功。
+`TUNNEL` 不设或不为 `1` 时不会起隧道，正常本地开发不会被挂到公网。
+
+也可以完全绕开服务进程，单跑一个转发脚本：
+
+```powershell
+node --env-file=server/.env node-sdk-example/index.js
+```
+
+#### 已知坑
+
+- **令牌必须显式传参**，不能用 `authtoken_from_env: true`。Bun 的 `.env` 自动加载只填
+  `process.env`（JS 侧），不写真实进程环境，而 SDK 的原生层读的是后者 —— 结果就是令牌
+  有效却报 `ERR_NGROK_4018`。`server/src/index.ts` 里已经用显式传参绕开了。
+- **免费版带宽 1GB/月**，而 `MAX_UPLOAD_BYTES` 默认 512MB，传两个大包就烧完。
+- **免费版首次访问有浏览器警告中间页**，SPA 的 `fetch('/api/...')` 可能拿到 HTML 而非
+  JSON。前端请求带上 `ngrok-skip-browser-warning: 1` 头，或在 dashboard 绑固定域名。
+- 固定域名：在 https://dashboard.ngrok.com/domains 领取后，给 `forward()` 传
+  `domain: "你的域名.ngrok-free.app"`。
 
 ## 4. 验证与分享
 

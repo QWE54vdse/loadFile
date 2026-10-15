@@ -85,4 +85,29 @@ console.log(
 		: '[archive-dock] web/dist not found — run `bun run dev:web` for the Vite dev server'
 )
 
+// Opt-in public tunnel: `TUNNEL=1 bun run start`. Off by default so a normal
+// local run never ends up reachable from the internet by accident.
+//
+// The token is passed explicitly instead of via `authtoken_from_env: true`.
+// Bun's .env auto-loading only fills `process.env` for JS — it never writes the
+// real OS environment, which is where the SDK's native layer reads from. So a
+// token that lives only in .env makes `authtoken_from_env` fail with
+// ERR_NGROK_4018 even though the token is valid.
+//
+// A dead tunnel is logged, not fatal: the local service keeps serving.
+if (process.env.TUNNEL === '1') {
+	const authtoken = process.env.NGROK_AUTHTOKEN
+	if (!authtoken) {
+		console.warn('[archive-dock] TUNNEL=1 但 NGROK_AUTHTOKEN 未设置 —— 跳过隧道')
+	} else {
+		try {
+			const { forward } = await import('@ngrok/ngrok')
+			const listener = await forward({ addr: config.port, authtoken })
+			console.log(`[archive-dock] public: ${listener.url()}`)
+		} catch (error) {
+			console.error('[archive-dock] 隧道启动失败，仅本地可访问：', error)
+		}
+	}
+}
+
 export type App = typeof app
