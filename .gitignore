@@ -16,3 +16,6 @@ server/data/
 .bun-cache/
 *.log
 .DS_Store
+
+# reference clone of ngrok/node-sdk-example — not our code, keep it out
+node-sdk-example/

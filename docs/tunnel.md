@@ -105,10 +105,10 @@ $env:TUNNEL = "1"; bun run start
 日志里出现 `[archive-dock] public: https://xxx.ngrok-free.dev` 即成功。
 `TUNNEL` 不设或不为 `1` 时不会起隧道，正常本地开发不会被挂到公网。
 
-也可以完全绕开服务进程，单跑一个转发脚本：
+也可以完全绕开服务进程，单跑一个转发脚本（`server/.env` 同样被自动加载）：
 
 ```powershell
-node --env-file=server/.env node-sdk-example/index.js
+bun run tunnel
 ```
 
 #### 已知坑
